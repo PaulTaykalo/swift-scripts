@@ -1,0 +1,13 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    objc-dependency-tree-generator (0.1.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  objc-dependency-tree-generator (~> 0.1.0)
+
+BUNDLED WITH
+   1.16.0

@@ -1,0 +1,2 @@
+source 'https://rubygems.org'
+gem 'objc-dependency-tree-generator', '~> 0.1.0'
