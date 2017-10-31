@@ -3,4 +3,7 @@
 
 require 'swift-unused'
 
-SwiftUnused.hi
+unused = SwiftUnused.new(ARGV[0])
+unused.search
+puts "Classes: #{unused.classes}"
+puts "Protocols: #{unused.protocols}"
