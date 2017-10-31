@@ -21,6 +21,34 @@
         (parameter "self" type='B' interface type='B'))
       (parameter_list)
       (brace_stmt
+        (return_stmt implicit))))
+  (class_decl "C" interface type='C.Type' access=internal @_fixed_layout
+    (destructor_decl implicit "deinit" interface type='(C) -> () -> ()' access=internal @objc
+      (parameter_list
+        (parameter "self" type='C' interface type='C'))
+      (brace_stmt))
+    (constructor_decl implicit "init()" interface type='(C.Type) -> () -> C' access=internal designated
+      (parameter_list
+        (parameter "self" type='C' interface type='C'))
+      (parameter_list)
+      (brace_stmt
+        (return_stmt implicit))))
+  (class_decl "D" interface type='D.Type' access=internal @_fixed_layout inherits: C
+    (destructor_decl implicit "deinit" interface type='(D) -> () -> ()' access=internal @objc
+      (parameter_list
+        (parameter "self" type='D' interface type='D'))
+      (brace_stmt))
+    (constructor_decl implicit "init()" interface type='(D.Type) -> () -> D' access=internal override=Unused.(file).C.init()@/Users/paultaykalo/Projects/swift-scripts/unused-via-ast/XcodeProj/Unused/Unused/A.swift:7:7 designated
+      (parameter_list
+        (parameter "self" type='D' interface type='D'))
+      (parameter_list)
+      (brace_stmt
+        (rebind_self_in_constructor_expr implicit type='()'
+          (call_expr implicit type='C' nothrow arg_labels=
+            (dot_syntax_call_expr implicit type='() -> C' super nothrow
+              (other_constructor_ref_expr implicit type='(C) -> () -> C' decl=Unused.(file).C.init()@/Users/paultaykalo/Projects/swift-scripts/unused-via-ast/XcodeProj/Unused/Unused/A.swift:7:7)
+              (super_ref_expr implicit type='C'))
+            (tuple_expr implicit type='()')))
         (return_stmt implicit)))))
 (source_file
   (import_decl 'UIKit')
@@ -93,7 +121,7 @@
         (tuple_expr implicit type='(nilLiteral: ())' names=nilLiteral
           (tuple_expr implicit type='()'))))
     (var_decl "window" type='UIWindow?' interface type='UIWindow?' access=internal @objc storage_kind=stored_with_trivial_accessors
-      (func_decl implicit 'anonname=0x7fe790220980' interface type='(AppDelegate) -> () -> UIWindow?' access=internal @objc getter_for=window
+      (func_decl implicit 'anonname=0x7fbde9274980' interface type='(AppDelegate) -> () -> UIWindow?' access=internal @objc getter_for=window
         (parameter_list
           (parameter "self" type='AppDelegate' interface type='AppDelegate'))
         (parameter_list)
@@ -102,7 +130,7 @@
             (load_expr implicit type='UIWindow?'
               (member_ref_expr implicit type='@lvalue UIWindow?' accessKind=read decl=Unused.(file).AppDelegate.window@/Users/paultaykalo/Projects/swift-scripts/unused-via-ast/XcodeProj/Unused/Unused/AppDelegate.swift:13:9 direct_to_storage
                 (declref_expr implicit type='AppDelegate' decl=Unused.(file).AppDelegate.<anonymous>.self@/Users/paultaykalo/Projects/swift-scripts/unused-via-ast/XcodeProj/Unused/Unused/AppDelegate.swift:13:9 function_ref=unapplied))))))
-      (func_decl implicit 'anonname=0x7fe790225800' interface type='(AppDelegate) -> (UIWindow?) -> ()' access=internal @objc setter_for=window
+      (func_decl implicit 'anonname=0x7fbde927a800' interface type='(AppDelegate) -> (UIWindow?) -> ()' access=internal @objc setter_for=window
         (parameter_list
           (parameter "self" type='AppDelegate' interface type='AppDelegate'))
         (parameter_list
@@ -112,13 +140,13 @@
             (member_ref_expr implicit type='@lvalue UIWindow?' accessKind=write decl=Unused.(file).AppDelegate.window@/Users/paultaykalo/Projects/swift-scripts/unused-via-ast/XcodeProj/Unused/Unused/AppDelegate.swift:13:9 direct_to_storage
               (declref_expr implicit type='AppDelegate' decl=Unused.(file).AppDelegate.<anonymous>.self@/Users/paultaykalo/Projects/swift-scripts/unused-via-ast/XcodeProj/Unused/Unused/AppDelegate.swift:13:9 function_ref=unapplied))
             (declref_expr implicit type='UIWindow?' decl=Unused.(file).AppDelegate.<anonymous>.value@/Users/paultaykalo/Projects/swift-scripts/unused-via-ast/XcodeProj/Unused/Unused/AppDelegate.swift:13:9 function_ref=unapplied))))
-      (func_decl implicit 'anonname=0x7fe790225dc0' interface type='(AppDelegate) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=window
+      (func_decl implicit 'anonname=0x7fbde927adc0' interface type='(AppDelegate) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=window
         (parameter_list
           (parameter "self" type='AppDelegate' interface type='AppDelegate'))
         (parameter_list
           (parameter "buffer" type='Builtin.RawPointer' interface type='Builtin.RawPointer')
           (parameter "callbackStorage" type='inout Builtin.UnsafeValueBuffer' interface type='inout Builtin.UnsafeValueBuffer' mutable))))
-    (func_decl implicit 'anonname=0x7fe790220980' interface type='(AppDelegate) -> () -> UIWindow?' access=internal @objc getter_for=window
+    (func_decl implicit 'anonname=0x7fbde9274980' interface type='(AppDelegate) -> () -> UIWindow?' access=internal @objc getter_for=window
       (parameter_list
         (parameter "self" type='AppDelegate' interface type='AppDelegate'))
       (parameter_list)
@@ -127,7 +155,7 @@
           (load_expr implicit type='UIWindow?'
             (member_ref_expr implicit type='@lvalue UIWindow?' accessKind=read decl=Unused.(file).AppDelegate.window@/Users/paultaykalo/Projects/swift-scripts/unused-via-ast/XcodeProj/Unused/Unused/AppDelegate.swift:13:9 direct_to_storage
               (declref_expr implicit type='AppDelegate' decl=Unused.(file).AppDelegate.<anonymous>.self@/Users/paultaykalo/Projects/swift-scripts/unused-via-ast/XcodeProj/Unused/Unused/AppDelegate.swift:13:9 function_ref=unapplied))))))
-    (func_decl implicit 'anonname=0x7fe790225800' interface type='(AppDelegate) -> (UIWindow?) -> ()' access=internal @objc setter_for=window
+    (func_decl implicit 'anonname=0x7fbde927a800' interface type='(AppDelegate) -> (UIWindow?) -> ()' access=internal @objc setter_for=window
       (parameter_list
         (parameter "self" type='AppDelegate' interface type='AppDelegate'))
       (parameter_list
@@ -137,7 +165,7 @@
           (member_ref_expr implicit type='@lvalue UIWindow?' accessKind=write decl=Unused.(file).AppDelegate.window@/Users/paultaykalo/Projects/swift-scripts/unused-via-ast/XcodeProj/Unused/Unused/AppDelegate.swift:13:9 direct_to_storage
             (declref_expr implicit type='AppDelegate' decl=Unused.(file).AppDelegate.<anonymous>.self@/Users/paultaykalo/Projects/swift-scripts/unused-via-ast/XcodeProj/Unused/Unused/AppDelegate.swift:13:9 function_ref=unapplied))
           (declref_expr implicit type='UIWindow?' decl=Unused.(file).AppDelegate.<anonymous>.value@/Users/paultaykalo/Projects/swift-scripts/unused-via-ast/XcodeProj/Unused/Unused/AppDelegate.swift:13:9 function_ref=unapplied))))
-    (func_decl implicit 'anonname=0x7fe790225dc0' interface type='(AppDelegate) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=window
+    (func_decl implicit 'anonname=0x7fbde927adc0' interface type='(AppDelegate) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=window
       (parameter_list
         (parameter "self" type='AppDelegate' interface type='AppDelegate'))
       (parameter_list

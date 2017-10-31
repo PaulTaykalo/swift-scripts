@@ -15,6 +15,11 @@ class SwiftUnusedTest < Minitest::Test
     assert_includes(@unused.classes, 'B')    
   end
 
+  def test_used_by_inheritance
+    assert_includes(@unused.classes, 'D')    
+    refute_includes(@unused.classes, 'C')    
+  end
+
   def create_sut
     SwiftUnused.new("./test/fixtures/Unused.ast")
   end  
