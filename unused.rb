@@ -5,7 +5,7 @@ Encoding.default_internal = Encoding::UTF_8
 
 class Item
   def initialize(file, line, at)
-    @file = Dir.pwd + '/' + file
+    @file = file
     @line = line
     @at = at + 1
     if match = line.match(/(func|let|var|class|enum|struct|protocol)\s+(\w+)/)
@@ -38,12 +38,16 @@ class Item
     serialize
   end
 
+  def full_file_path
+    Dir.pwd + '/' + @file
+  end  
+
   def serialize
     "Item< #{@type.to_s.green} #{@name.to_s.yellow} [#{modifiers.join(" ").cyan}] from: #{@file}:#{@at}:0>"
   end  
 
   def to_xcode 
-    "#{@file}:#{@at}:1: warning: #{@type.to_s} #{@name.to_s} #{modifiers.join(" ")}"
+    "#{full_file_path}:#{@at}:0: warning: #{@type.to_s} #{@name.to_s} #{modifiers.join(" ")}"
   end
 
 
