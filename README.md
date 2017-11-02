@@ -17,6 +17,11 @@ Starting searching globally it can take a while
  Item< func getSelectedIds [] from: AnotherFile.swift:82:0>
 ```
 
+## Xcode integration
+In order to integrate this to Xcode just add *Custom Build Phase/Run Script*
+```~/Projects/swift-scripts/unused.rb xcode``
+
+
 ## Known issues:
 - Fully text search (no fancy stuff)
 - A lot of false-positives (protocols, functions, objc interoop, System delegate methods)
