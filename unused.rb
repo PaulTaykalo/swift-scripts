@@ -47,7 +47,7 @@ class Item
   end  
 
   def to_xcode 
-    "#{full_file_path}:#{@at}:0: warning: #{@type.to_s} #{@name.to_s} #{modifiers.join(" ")}"
+    "#{full_file_path}:#{@at}:0: warning: #{@type.to_s} #{@name.to_s} is unused"
   end
 
 
@@ -85,7 +85,7 @@ class Unused
     items = items_in
     usages = items.map { |f| 0 }
     files.each { |file|
-      lines = File.readlines(file).map {|line| line.gsub(/^\/\/.*/, "")  }
+      lines = File.readlines(file).map {|line| line.gsub(/^\s*\/\/.*/, "")  }
       words = lines.join("\n").split(/\W+/)
       words_arrray = words.group_by { |w| w }.map { |w, ws| [w, ws.length] }.flatten
 
@@ -114,7 +114,7 @@ class Unused
 
   def grab_items(file)
     result = []
-    lines = File.readlines(file).map {|line| line.gsub(/^\/\/.*/, "")  }
+    lines = File.readlines(file).map {|line| line.gsub(/^\s*\/\/.*/, "")  }
     items = lines.each_with_index.select { |line, i| line[/(func|let|var|class|enum|struct|protocol)\s+\w+/] }.map { |line, i| Item.new(file, line, i)}
   end  
 
