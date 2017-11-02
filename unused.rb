@@ -1,10 +1,13 @@
 #!/usr/bin/ruby
+#encoding: utf-8
+Encoding.default_external = Encoding::UTF_8
+Encoding.default_internal = Encoding::UTF_8
 
 class Item
   def initialize(file, line, at)
-    @file = file
+    @file = Dir.pwd + '/' + file
     @line = line
-    @at = at - 1
+    @at = at + 1
     if match = line.match(/(func|let|var|class|enum|struct|protocol)\s+(\w+)/)
       @type = match.captures[0]
       @name = match.captures[1]
@@ -38,6 +41,11 @@ class Item
   def serialize
     "Item< #{@type.to_s.green} #{@name.to_s.yellow} [#{modifiers.join(" ").cyan}] from: #{@file}:#{@at}:0>"
   end  
+
+  def to_xcode 
+    "#{@file}:#{@at}:1: warning: #{@type.to_s} #{@name.to_s} #{modifiers.join(" ")}"
+  end
+
 
 end
 class Unused
@@ -73,7 +81,7 @@ class Unused
     items = items_in
     usages = items.map { |f| 0 }
     files.each { |file|
-      lines = File.readlines(file).select { |line| !line.match(/^\s*\/\//) }
+      lines = File.readlines(file).map {|line| line.gsub(/^\/\/.*/, "")  }
       words = lines.join("\n").split(/\W+/)
       words_arrray = words.group_by { |w| w }.map { |w, ws| [w, ws.length] }.flatten
 
@@ -92,13 +100,17 @@ class Unused
 
     items = items.select { |f| !f.file.start_with?("Pods/") && !f.file.end_with?("Tests.swift") && !f.file.end_with?("Spec.swift") }
     if items.length > 0
-      puts " #{items.map { |e| e.to_s }.join("\n ")}"
+      if ARGV[0] == "xcode"
+        $stderr.puts "#{items.map { |e| e.to_xcode }.join("\n")}"
+      else
+        puts "#{items.map { |e| e.to_s }.join("\n ")}"
+      end
     end  
   end  
 
   def grab_items(file)
     result = []
-    lines = File.readlines(file).select { |line| !line.match(/^\s*\/\//) }
+    lines = File.readlines(file).map {|line| line.gsub(/^\/\/.*/, "")  }
     items = lines.each_with_index.select { |line, i| line[/(func|let|var|class|enum|struct|protocol)\s+\w+/] }.map { |line, i| Item.new(file, line, i)}
   end  
 
