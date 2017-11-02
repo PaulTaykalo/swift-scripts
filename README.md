@@ -19,8 +19,9 @@ Starting searching globally it can take a while
 
 ## Xcode integration
 In order to integrate this to Xcode just add *Custom Build Phase/Run Script*  
-`~/Projects/swift-scripts/unused.rb xcode`
-
+`~/Projects/swift-scripts/unused.rb xcode`  
+![](https://user-images.githubusercontent.com/119268/32348473-88080ed2-c01c-11e7-9de6-762aeb195156.png)
+![](https://user-images.githubusercontent.com/119268/32348476-8af3a700-c01c-11e7-893f-013851568882.png)
 
 ## Known issues:
 - Fully text search (no fancy stuff)
