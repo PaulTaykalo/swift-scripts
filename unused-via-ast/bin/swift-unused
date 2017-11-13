@@ -3,7 +3,16 @@
 
 require 'swift-unused'
 
-unused = SwiftUnused.new(ARGV[0])
+unused = SwiftUnused.new({:ast_path => ARGV[0]})
 unused.search
 puts "Classes: #{unused.classes}"
 puts "Protocols: #{unused.protocols}"
+puts "Structs: #{unused.structs}"
+puts "Enums: #{unused.enums}"
+
+puts """
+Unused Classes #{unused.classes.length}, 
+Protocos: #{unused.protocols.length}, 
+Structs: #{unused.structs.length}
+Enums: #{unused.enums.length}
+"""
