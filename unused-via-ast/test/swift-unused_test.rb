@@ -124,6 +124,19 @@ class SwiftUnusedTest < Minitest::Test
     refute_includes(@unused.classes, 'A')         
   end
 
+  def test_used_items_in_internal_variables
+    with_swift_ast "0011", """
+    class A {}
+
+    func a(){
+      let p = A()
+      print(p)
+    }
+    """#, skip_cache=true
+    refute_includes(@unused.classes, 'A')         
+  end
+
+
   def with_swift_ast(id, source, skip_cache = false)
     require 'tempfile'
     generated_path =  "./test/fixtures/generated/"

@@ -29,39 +29,29 @@ class SwiftUnused
         @used_classes[inh] = "inherited" 
         @used_protocols[inh] = "inherited" # we aren't gathering info what string is, so we'll just mark the as P and Classes
       }
-      register_variables(classnode) { |var_type| 
-        # Here we don't know what type it was... yet
-        @used_classes[var_type] = "inherited" 
-        @used_protocols[var_type] = "inherited" 
-        @used_structs[var_type] = "inherited" 
-        @used_enums[var_type] = "inherited" 
-      }
-      register_func_types(classnode) { |var_type|
-        @used_classes[var_type] = "inherited" 
-        @used_protocols[var_type] = "inherited" 
-        @used_structs[var_type] = "inherited" 
-        @used_enums[var_type] = "inherited" 
-      }
+      register_variables(classnode, &method(:mark_as_used))
+      register_func_types(classnode, &method(:mark_as_used)) 
 
     }
 
     protocols.each { |protocolnode|
       register_inheritance(protocolnode) { |inh| @used_protocols[inh] = "inherited"}
+      register_func_types(protocolnode, &method(:mark_as_used)) 
     }
 
     extensions.each { |extension_node|
       register_inheritance(extension_node) { |inh| @used_protocols[inh] = "inherited"}
+      register_func_types(extension_node, &method(:mark_as_used)) 
+      register_variables(extension_node, &method(:mark_as_used))
     }
 
     structs.each { |struct_node|
       register_inheritance(struct_node) { |inh| @used_protocols[inh] = "inherited"}
-      register_variables(struct_node) { |var_type| 
-        # Here we don't know what type it was... yet
-        @used_classes[var_type] = "inherited" 
-        @used_protocols[var_type] = "inherited" 
-        @used_structs[var_type] = "inherited" 
-        @used_enums[var_type] = "inherited" 
-      }
+      register_variables(struct_node, &method(:mark_as_used))
+    }
+
+    @tree.on_node('func_decl') { |func_decl|
+      register_variables(func_decl, &method(:mark_as_used))
     }
 
      
@@ -157,5 +147,14 @@ class SwiftUnused
   def add_usage(inh_name, type)
     @used_classes[inh_name] = type
   end  
+
+  def mark_as_used(type)
+    @used_classes[type] = "inherited" 
+    @used_protocols[type] = "inherited" 
+    @used_structs[type] = "inherited" 
+    @used_enums[type] = "inherited" 
+  end
+
+
 
 end
