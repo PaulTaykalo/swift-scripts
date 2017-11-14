@@ -29,6 +29,20 @@ class SwiftUnused
         @used_classes[inh] = "inherited" 
         @used_protocols[inh] = "inherited" # we aren't gathering info what string is, so we'll just mark the as P and Classes
       }
+      register_variables(classnode) { |var_type| 
+        # Here we don't know what type it was... yet
+        @used_classes[var_type] = "inherited" 
+        @used_protocols[var_type] = "inherited" 
+        @used_structs[var_type] = "inherited" 
+        @used_enums[var_type] = "inherited" 
+      }
+      register_func_types(classnode) { |var_type|
+        @used_classes[var_type] = "inherited" 
+        @used_protocols[var_type] = "inherited" 
+        @used_structs[var_type] = "inherited" 
+        @used_enums[var_type] = "inherited" 
+      }
+
     }
 
     protocols.each { |protocolnode|
@@ -41,6 +55,13 @@ class SwiftUnused
 
     structs.each { |struct_node|
       register_inheritance(struct_node) { |inh| @used_protocols[inh] = "inherited"}
+      register_variables(struct_node) { |var_type| 
+        # Here we don't know what type it was... yet
+        @used_classes[var_type] = "inherited" 
+        @used_protocols[var_type] = "inherited" 
+        @used_structs[var_type] = "inherited" 
+        @used_enums[var_type] = "inherited" 
+      }
     }
 
      
@@ -98,6 +119,40 @@ class SwiftUnused
       yield inh_name
     }
   end
+
+  def register_variables(node, &block)
+    node.on_node("var_decl") { |var_node|
+      return unless type_decl = var_node.parameters.detect { |el| el.start_with?("type=")}
+      type = type_decl.split('=').last[1..-2]
+      yield type
+    }
+  end  
+
+  def register_func_types(node, &block)
+    node.on_node("func_decl") { |func_decl|
+      func_decl.on_node("parameter_list") { |parameter_list|
+        parameter_list.on_node("parameter") { |parameter|
+          type = type_from_node(parameter, 'type')
+          yield type if  type
+        }
+      }
+
+      func_decl.on_node("result") { |result|
+        result.on_node("type_ident") { |type_ident|
+          type_ident.on_node("component") { |component|
+            type = type_from_node(component, 'id')
+            yield type if type
+          }
+        }
+      }
+    }
+  end  
+
+
+  def type_from_node(node, attribute = "type")
+    return nil unless type_decl = node.parameters.detect { |el| el.start_with?("#{attribute}=")}
+    type = type_decl.split('=').last[1..-2]
+  end  
 
   def add_usage(inh_name, type)
     @used_classes[inh_name] = type

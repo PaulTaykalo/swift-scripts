@@ -77,7 +77,52 @@ class SwiftUnusedTest < Minitest::Test
     assert_includes(@unused.enums, 'B')    
   end
 
+  def test_used_items_in_lets_and_vars
+    with_swift_ast "0007", """
+    protocol A {}
+    class B {}
+    struct C {}
+    enum D {}  
 
+    struct E {
+      let a: A
+      var b: B
+      let c: C
+      var d: D
+    }
+    """#, skip_cache=true
+    refute_includes(@unused.protocols, 'A')        
+    refute_includes(@unused.classes, 'B')        
+    refute_includes(@unused.structs, 'C')        
+    refute_includes(@unused.enums, 'D')        
+
+  end
+
+  def test_used_items_in_function_return_types
+    with_swift_ast "0009", """
+    class A {}
+
+    class C {
+      func a() -> A {
+        return A()
+      }
+    }
+    """#, skip_cache=true
+    refute_includes(@unused.classes, 'A')         
+  end
+
+
+  def test_used_items_in_function_parameters
+    with_swift_ast "0010", """
+    class A {}
+
+    class C {
+      func a(param: A){
+      }
+    }
+    """#, skip_cache=true
+    refute_includes(@unused.classes, 'A')         
+  end
 
   def with_swift_ast(id, source, skip_cache = false)
     require 'tempfile'
