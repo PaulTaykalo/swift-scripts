@@ -31,27 +31,36 @@ class SwiftUnused
       }
       register_variables(classnode, &method(:mark_as_used))
       register_func_types(classnode, &method(:mark_as_used)) 
-
+      register_calls(classnode, &method(:mark_as_used)) 
+      register_pattern_bindings(classnode, &method(:mark_as_used))
     }
 
     protocols.each { |protocolnode|
       register_inheritance(protocolnode) { |inh| @used_protocols[inh] = "inherited"}
       register_func_types(protocolnode, &method(:mark_as_used)) 
+      register_pattern_bindings(protocolnode, &method(:mark_as_used))
     }
 
     extensions.each { |extension_node|
       register_inheritance(extension_node) { |inh| @used_protocols[inh] = "inherited"}
       register_func_types(extension_node, &method(:mark_as_used)) 
       register_variables(extension_node, &method(:mark_as_used))
+      register_calls(extension_node, &method(:mark_as_used)) 
+      register_pattern_bindings(extension_node, &method(:mark_as_used))
     }
 
     structs.each { |struct_node|
       register_inheritance(struct_node) { |inh| @used_protocols[inh] = "inherited"}
       register_variables(struct_node, &method(:mark_as_used))
+      register_calls(struct_node, &method(:mark_as_used)) 
+      register_pattern_bindings(struct_node, &method(:mark_as_used))      
     }
 
     @tree.on_node('func_decl') { |func_decl|
       register_variables(func_decl, &method(:mark_as_used))
+      register_calls(func_decl, &method(:mark_as_used)) 
+      register_pattern_bindings(func_decl, &method(:mark_as_used))
+
     }
 
      
@@ -101,11 +110,16 @@ class SwiftUnused
     @enums
   end  
 
+  def tree 
+    @tree
+  end  
+
   def register_inheritance(node, &block)
     inheritance = node.parameters.drop_while { |el| el != "inherits:" }
     inheritance = inheritance.drop(1)
     inheritance.each { |inh| 
       inh_name = inh.chomp(",")
+      inh_name = inh_name[/(\w|_)+/]
       yield inh_name
     }
   end
@@ -120,10 +134,14 @@ class SwiftUnused
 
   def register_func_types(node, &block)
     node.on_node("func_decl") { |func_decl|
+
+      # skip implicit functions
+      next if func_decl.parameters.first == "implicit"
+
       func_decl.on_node("parameter_list") { |parameter_list|
         parameter_list.on_node("parameter") { |parameter|
           type = type_from_node(parameter, 'type')
-          yield type if  type
+          yield type if type
         }
       }
 
@@ -138,10 +156,34 @@ class SwiftUnused
     }
   end  
 
+  def register_calls(node, &block)
+    node.on_node('call_expr') { |call_expr|
+      type = type_from_node(call_expr, 'type')
+      yield type if type
+
+      call_expr.on_node("type_expr") { |type_expr|
+          dot_type = type_from_node(type_expr, 'typerepr')
+          yield dot_type if dot_type
+      }
+
+    }
+  end  
+
+  def register_pattern_bindings(node, &block)
+    node.on_node('pattern_binding_decl') { |pattern_binding_decl|
+      pattern_binding_decl.on_node('type_expr') {|type_expr|
+          dot_type = type_from_node(type_expr, 'typerepr')
+          yield dot_type if dot_type
+      }
+    }
+  end  
+
 
   def type_from_node(node, attribute = "type")
     return nil unless type_decl = node.parameters.detect { |el| el.start_with?("#{attribute}=")}
     type = type_decl.split('=').last[1..-2]
+    type = type[/\w+/]
+    return type
   end  
 
   def add_usage(inh_name, type)

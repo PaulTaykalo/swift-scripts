@@ -136,6 +136,130 @@ class SwiftUnusedTest < Minitest::Test
     refute_includes(@unused.classes, 'A')         
   end
 
+  def test_used_items_in_internal_calls
+    with_swift_ast "0012", """
+    protocol B {}
+    class A: B {}
+
+    func a(){
+      let p: B = A()
+      print(p)
+    }
+    """#, skip_cache=true
+    refute_includes(@unused.classes, 'A')         
+    refute_includes(@unused.protocols, 'B')         
+
+  end
+
+  def test_used_items_in_static_calls
+    with_swift_ast "0013", """
+    class A {
+      static func parse() { }
+    }
+
+    func a(){
+      A.parse()
+    }
+    """#, skip_cache=true
+    refute_includes(@unused.classes, 'A')         
+
+  end
+
+  def test_used_items_in_static_lets
+    with_swift_ast "0014", """
+    class A {
+      static let some: String = \"12\"
+    }
+
+    func a(){
+      print(A.some)
+    }
+    """#, skip_cache=true
+    refute_includes(@unused.classes, 'A')         
+
+  end
+
+  def test_used_items_in_static_lets_in_stored_variables
+    with_swift_ast "0015", """
+    class A {
+      static let some: String = \"12\"
+    }
+
+    class B {
+      let item = A.some
+    }
+    """#, skip_cache=true
+    refute_includes(@unused.classes, 'A')         
+
+  end
+
+  def test_used_items_by_function_refs
+    with_swift_ast "0016", """
+    class A {
+      static func foo(value: String) -> String? { return \"12\"}
+    }
+
+    class B {
+      static func do() {
+        let a = A.foo
+        a(\"13\")
+      }
+    }
+    """#, skip_cache=true
+    refute_includes(@unused.classes, 'A')         
+
+  end
+
+  def test_generic_classes_are_used
+    with_swift_ast "0017", """
+    class B<T> {
+      let t: T
+    }
+    class C: B<Int> {}
+    """#, skip_cache=true
+    refute_includes(@unused.classes, 'B')         
+    assert_includes(@unused.classes, 'C')
+    
+  end
+
+  def test_lazy_var_fix
+    with_swift_ast "0019", """
+
+    class A {}
+    struct B {
+      let a: A
+    } 
+    class C {
+      static func s(value: Int) -> A { return A()}
+    }
+    class D {
+      static func getB() -> B {
+        let products: [Int] = [1]
+        return B(a: products.map(C.s))
+      }
+    }
+
+    """#, skip_cache=true
+    refute_includes(@unused.classes, 'C')         
+    refute_includes(@unused.classes, 'A')         
+    refute_includes(@unused.classes, 'B')         
+    
+  end
+
+  def test_generic_classes_are_used_in_lazy_props
+    with_swift_ast "0020", """
+    class B<T> {
+      let t: T
+    }
+    class C {
+      lazy var b = B<Int>(t: 1)
+    }
+    """, skip_cache=true
+    refute_includes(@unused.classes, 'B')         
+    assert_includes(@unused.classes, 'C')
+    
+  end
+
 
   def with_swift_ast(id, source, skip_cache = false)
     require 'tempfile'
