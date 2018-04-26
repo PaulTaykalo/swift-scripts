@@ -66,10 +66,11 @@ class Unused
 
       # Usage within the file
       if private_items.length > 0
-        find_usages_in_files([my_text_file], private_items)
+        find_usages_in_files([my_text_file], [], private_items)
       end  
 
     }
+
     puts "Total items to be checked #{items.length}"
 
     items = items.uniq { |f| f.name }
@@ -77,11 +78,14 @@ class Unused
 
     puts "Starting searching globally it can take a while".green
 
-    find_usages_in_files(all_files, items)
+    xibs = Dir.glob("**/*.xib")
+    storyboards = Dir.glob("**/*.storyboard")
+
+    find_usages_in_files(all_files, xibs + storyboards, items)
 
   end  
 
-  def find_usages_in_files(files, items_in)
+  def find_usages_in_files(files, xibs, items_in)
     items = items_in
     usages = items.map { |f| 0 }
     files.each { |file|
@@ -101,6 +105,25 @@ class Unused
       indexes.reverse.each { |i| usages.delete_at(i) && items.delete_at(i) }
     }
 
+    xibs.each { |xib|
+      lines = File.readlines(xib).map {|line| line.gsub(/^\s*\/\/.*/, "")  }
+      full_xml = lines.join(" ")
+      classes = full_xml.scan(/(class|customClass)="([^"]+)"/).map { |cd| cd[1] }
+      classes_array = classes.group_by { |w| w }.map { |w, ws| [w, ws.length] }.flatten
+
+      wf = Hash[*classes_array]
+
+      items.each_with_index { |f, i| 
+        usages[i] += (wf[f.name] || 0)
+      }
+      # Remove all items which has usage 2+
+      indexes = usages.each_with_index.select { |u, i| u >= 2 }.map { |f, i| i }
+
+      # reduce usage array if we found some functions already 
+      indexes.reverse.each { |i| usages.delete_at(i) && items.delete_at(i) }
+
+    }
+
 
     items = items.select { |f| !f.file.start_with?("Pods/") && !f.file.end_with?("Tests.swift") && !f.file.end_with?("Spec.swift") }
     if items.length > 0
@@ -113,7 +136,6 @@ class Unused
   end  
 
   def grab_items(file)
-    result = []
     lines = File.readlines(file).map {|line| line.gsub(/^\s*\/\/.*/, "")  }
     items = lines.each_with_index.select { |line, i| line[/(func|let|var|class|enum|struct|protocol)\s+\w+/] }.map { |line, i| Item.new(file, line, i)}
   end  
