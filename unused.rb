@@ -125,7 +125,7 @@ class Unused
     }
 
 
-    items = items.select { |f| !f.file.start_with?("Pods/") && !f.file.end_with?("Tests.swift") && !f.file.end_with?("Spec.swift") }
+    items = items.select { |f| !f.file.start_with?("Pods/") && !f.file.end_with?("Tests.swift") && !f.file.end_with?("Spec.swift") && !f.file.include?("Tests/") }
     if items.length > 0
       if ARGV[0] == "xcode"
         $stderr.puts "#{items.map { |e| e.to_xcode }.join("\n")}"
