@@ -85,6 +85,39 @@ class Unused
 
   end  
 
+  def ignore_files_with_regexps(files, regexps)
+    files.select { |f| regexps.all? { |r| Regexp.new(r).match(f.file).nil? } }
+  end  
+
+  def ignoring_regexps_from_command_line_args
+    regexps = []
+    should_skip_predefined_ignores = false
+
+    arguments = ARGV.clone
+    until arguments.empty?
+      item = arguments.shift
+      if item == "--ignore"
+        regex = arguments.shift
+        regexps += [regex]
+      end  
+
+      if item == "--skip-predefined-ignores"
+        should_skip_predefined_ignores = true
+      end  
+    end  
+
+    if not should_skip_predefined_ignores
+      regexps += [
+       "^Pods/",
+       "Tests.swift$",
+       "Spec.swift$",
+       "Tests/"
+     ]
+   end 
+
+   regexps
+ end  
+
   def find_usages_in_files(files, xibs, items_in)
     items = items_in
     usages = items.map { |f| 0 }
@@ -124,8 +157,10 @@ class Unused
 
     }
 
+    regexps = ignoring_regexps_from_command_line_args()
 
-    items = items.select { |f| !f.file.start_with?("Pods/") && !f.file.end_with?("Tests.swift") && !f.file.end_with?("Spec.swift") && !f.file.include?("Tests/") }
+    items = ignore_files_with_regexps(items, regexps)
+
     if items.length > 0
       if ARGV[0] == "xcode"
         $stderr.puts "#{items.map { |e| e.to_xcode }.join("\n")}"
