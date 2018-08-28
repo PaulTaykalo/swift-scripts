@@ -55,7 +55,9 @@ end
 class Unused
   def find
     items = []
-    all_files = Dir.glob("**/*.swift")
+    all_files = Dir.glob("**/*.swift").reject do |path|
+      File.directory?(path)
+    end
 
     all_files.each { |my_text_file|
       file_items = grab_items(my_text_file)
