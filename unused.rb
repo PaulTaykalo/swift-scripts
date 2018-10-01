@@ -124,7 +124,7 @@ class Unused
     items = items_in
     usages = items.map { |f| 0 }
     files.each { |file|
-      lines = File.readlines(file).map {|line| line.gsub(/^\s*\/\/.*/, "")  }
+      lines = File.readlines(file).map {|line| line.gsub(/^[^\/]*\/\/.*/, "")  }
       words = lines.join("\n").split(/\W+/)
       words_arrray = words.group_by { |w| w }.map { |w, ws| [w, ws.length] }.flatten
 
