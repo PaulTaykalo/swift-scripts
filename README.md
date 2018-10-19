@@ -7,7 +7,7 @@ cd <path-to-the-project>
 <path-to-unused.sh>/unused.rb 
 ```
 
-## output
+## Output
 ```
  Item< func loadWebViewTos [private] from:File.swift:23:0>
 Total items to be checked 4276
