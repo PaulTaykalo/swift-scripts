@@ -175,6 +175,7 @@ class Unused
 
   def grab_items(file)
     lines = File.readlines(file).map {|line| line.gsub(/^\s*\/\/.*/, "")  }
+    lines = lines.select { |line| Regexp.new(/ignore_unused/).match(line).nil? }
     items = lines.each_with_index.select { |line, i| line[/(func|let|var|class|enum|struct|protocol)\s+\w+/] }.map { |line, i| Item.new(file, line, i)}
   end  
 
