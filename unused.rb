@@ -21,15 +21,15 @@ class Item
       @modifiers = match.captures[0].split(" ")
     end
     return @modifiers
-  end  
+  end
 
-  def name 
+  def name
     @name
-  end  
+  end
 
   def file
     @file
-  end  
+  end
 
   def to_s
     serialize
@@ -40,13 +40,13 @@ class Item
 
   def full_file_path
     Dir.pwd + '/' + @file
-  end  
+  end
 
   def serialize
     "Item< #{@type.to_s.green} #{@name.to_s.yellow} [#{modifiers.join(" ").cyan}] from: #{@file}:#{@at}:0>"
-  end  
+  end
 
-  def to_xcode 
+  def to_xcode
     "#{full_file_path}:#{@at}:0: warning: #{@type.to_s} #{@name.to_s} is unused"
   end
 
@@ -69,7 +69,7 @@ class Unused
       # Usage within the file
       if private_items.length > 0
         find_usages_in_files([my_text_file], [], private_items)
-      end  
+      end
 
     }
 
@@ -84,12 +84,41 @@ class Unused
     storyboards = Dir.glob("**/*.storyboard")
 
     find_usages_in_files(all_files, xibs + storyboards, items)
+  end
 
-  end  
+  def ignore_names_with_regexps(files, regexps)
+    files.select { |f| regexps.all? { |r| Regexp.new(r).match(f.name).nil? } }
+  end
+
+  def ignoring_regexp_names_from_command_line_args
+    regexps = []
+    should_skip_predefined_ignore_names = false
+
+    arguments = ARGV.clone
+    until arguments.empty?
+      item = arguments.shift
+      if item == "--ignore-name"
+        regex = arguments.shift
+        regexps += [regex]
+      end
+
+      if item == "--skip-predefined-ignore-names"
+        should_skip_predefined_ignore_names = true
+      end
+    end
+
+    if not should_skip_predefined_ignore_names
+      regexps += [
+       "_Previews",
+     ]
+   end
+
+   regexps
+ end
 
   def ignore_files_with_regexps(files, regexps)
     files.select { |f| regexps.all? { |r| Regexp.new(r).match(f.file).nil? } }
-  end  
+  end
 
   def ignoring_regexps_from_command_line_args
     regexps = []
@@ -101,12 +130,12 @@ class Unused
       if item == "--ignore"
         regex = arguments.shift
         regexps += [regex]
-      end  
+      end
 
       if item == "--skip-predefined-ignores"
         should_skip_predefined_ignores = true
-      end  
-    end  
+      end
+    end
 
     if not should_skip_predefined_ignores
       regexps += [
@@ -116,10 +145,10 @@ class Unused
        "Spec.swift$",
        "Tests/"
      ]
-   end 
+   end
 
    regexps
- end  
+ end
 
   def find_usages_in_files(files, xibs, items_in)
     items = items_in
@@ -131,13 +160,13 @@ class Unused
 
       wf = Hash[*words_arrray]
 
-      items.each_with_index { |f, i| 
+      items.each_with_index { |f, i|
         usages[i] += (wf[f.name] || 0)
       }
       # Remove all items which has usage 2+
       indexes = usages.each_with_index.select { |u, i| u >= 2 }.map { |f, i| i }
 
-      # reduce usage array if we found some functions already 
+      # reduce usage array if we found some functions already
       indexes.reverse.each { |i| usages.delete_at(i) && items.delete_at(i) }
     }
 
@@ -149,20 +178,22 @@ class Unused
 
       wf = Hash[*classes_array]
 
-      items.each_with_index { |f, i| 
+      items.each_with_index { |f, i|
         usages[i] += (wf[f.name] || 0)
       }
       # Remove all items which has usage 2+
       indexes = usages.each_with_index.select { |u, i| u >= 2 }.map { |f, i| i }
 
-      # reduce usage array if we found some functions already 
+      # reduce usage array if we found some functions already
       indexes.reverse.each { |i| usages.delete_at(i) && items.delete_at(i) }
 
     }
 
     regexps = ignoring_regexps_from_command_line_args()
-
     items = ignore_files_with_regexps(items, regexps)
+
+    regexpnames = ignoring_regexp_names_from_command_line_args()
+    items = ignore_names_with_regexps(items, regexpnames)
 
     if items.length > 0
       if ARGV[0] == "xcode"
@@ -170,21 +201,21 @@ class Unused
       else
         puts "#{items.map { |e| e.to_s }.join("\n ")}"
       end
-    end  
-  end  
+    end
+  end
 
   def grab_items(file)
     lines = File.readlines(file).map {|line| line.gsub(/^\s*\/\/.*/, "")  }
     items = lines.each_with_index.select { |line, i| line[/(func|let|var|class|enum|struct|protocol)\s+\w+/] }.map { |line, i| Item.new(file, line, i)}
-  end  
+  end
 
   def filter_items(items)
-    items.select { |f| 
+    items.select { |f|
       !f.name.start_with?("test") && !f.modifiers.include?("@IBAction") && !f.modifiers.include?("override") && !f.modifiers.include?("@objc") && !f.modifiers.include?("@IBInspectable")
     }
   end
 
-end  
+end
 
 class String
   def black;          "\e[30m#{self}\e[0m" end
