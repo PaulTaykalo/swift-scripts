@@ -8,7 +8,8 @@ class Item
     @file = file
     @line = line
     @at = at + 1
-    if match = line.match(/(func|let|var|class|enum|struct|protocol)\s+(\w+)/)
+    # typealias was added ⚠️
+    if match = line.match(/(func|let|var|class|enum|struct|protocol|typealias)\s+(\w+)/)
       @type = match.captures[0]
       @name = match.captures[1]
     end
@@ -117,7 +118,6 @@ class Unused
        "Tests/"
      ]
    end 
-
    regexps
  end  
 
@@ -175,15 +175,15 @@ class Unused
 
   def grab_items(file)
     lines = File.readlines(file).map {|line| line.gsub(/^\s*\/\/.*/, "")  }
-    items = lines.each_with_index.select { |line, i| line[/(func|let|var|class|enum|struct|protocol)\s+\w+/] }.map { |line, i| Item.new(file, line, i)}
+    # typealias was added ⚠️
+    items = lines.each_with_index.select { |line, i| line[/(func|let|var|class|enum|struct|protocol|typealias)\s+\w+/] }.map { |line, i| Item.new(file, line, i)}
   end  
 
+  # "CodingKeys" & "@main" & "Previews" for SwiftUI were added ⚠️
   def filter_items(items)
     items.select { |f| 
-      !f.name.start_with?("test") && !f.modifiers.include?("@IBAction") && !f.modifiers.include?("override") && !f.modifiers.include?("@objc") && !f.modifiers.include?("@IBInspectable")
-    }
+      !f.name.start_with?("test") && !f.modifiers.include?("@IBAction") && !f.modifiers.include?("override") && !f.modifiers.include?("@objc") && !f.modifiers.include?("@IBInspectable") && !f.modifiers.include?("@main") && !f.name.include?("CodingKeys") && !f.name.include?("Previews")}
   end
-
 end  
 
 class String
@@ -211,6 +211,5 @@ class String
   def blink;          "\e[5m#{self}\e[25m" end
   def reverse_color;  "\e[7m#{self}\e[27m" end
 end
-
 
 Unused.new.find
